@@ -17,13 +17,13 @@ offset: imm '\(' regname '\)';
 
 instname: instr | insti;
 
-instr: 'add' | 'sub' | 'xor';
-insti: 'addi' | 'xori';
-instb: 'beq' | 'bne' | 'blt' | 'bge';
-instj: 'jal' | 'jalr';
-instu: 'lui';
+instr: 'add' | 'sub' | 'xor' | 'sll' | 'slt' | 'sltu' | 'srl' | 'sra' | 'or' | 'and';
+insti: 'addi' | 'slti' | 'xori' | 'sltiu' | 'ori' | 'andi';
+instb: 'beq' | 'bne' | 'blt' | 'bge' | 'bltu' | 'bgeu';
+instj: 'jal';
+instu: 'lui' | 'auipc';
 instil: 'lw' | 'lh' | 'lb';
-insts: 's';
+insts: 'sb' | 'sh' | 'sw';
 
 imm : VAL;
 
