@@ -7,5 +7,5 @@
 
 ## Juan Pablo
 - Codificacion de instrucciones en binario
-- # PREGUNTA 17 MARZO:
+- # PREGUNTA 17 MAYO:
 ¿Para el inmediato de corrimiento en las instrucciones especiales tipo I, de corrimiento, el inmediato puede ser con signo, o no?
