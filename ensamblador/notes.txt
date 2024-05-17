@@ -1,0 +1,1 @@
+print("f7({})-rs2({})-rs1({})-f3({})-rd({})-opcode({})".format(expr.tail[0]['f7'], expr.tail[3], expr.tail[2], expr.tail[0]['f3'], expr.tail[1], expr.tail[0]['opcode']))
