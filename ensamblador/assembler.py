@@ -336,7 +336,7 @@ class HVisitor(plyplus.STransformer):
     imm5Bin = format(val & 0x1f, '05b')  # Asegura que esté en 5 bits
     return imm5Bin
 
-  def printRInstruction(self, expr):
+  def printRInstructionBIN(self, expr):
     inst = expr.tail[0]
     f7 = inst['f7']
     rs2 = expr.tail[3]
@@ -346,7 +346,17 @@ class HVisitor(plyplus.STransformer):
     opcode = inst['opcode']
     return f7 + rs2 + rs1 + f3 + rd + opcode
   
-  def printIInstruction(self, expr):
+  def printRInstructionHEXA(self, expr):
+    inst = expr.tail[0]
+    f7 = inst['f7']
+    rs2 = expr.tail[3]
+    rs1 = expr.tail[2]
+    f3 = inst['f3']
+    rd = expr.tail[1]
+    opcode = inst['opcode']
+    return hex(int(f7 + rs2 + rs1 + f3 + rd + opcode, 2))
+  
+  def printIInstructionBIN(self, expr):
     inst = expr.tail[0]
     imm12 = expr.tail[3]
     rs1 = expr.tail[2]
@@ -355,7 +365,16 @@ class HVisitor(plyplus.STransformer):
     opcode = inst['opcode']
     return imm12 + rs1 + f3 + rd + opcode
   
-  def printIsInstruction(self, expr):
+  def printIInstructionHEXA(self, expr):
+    inst = expr.tail[0]
+    imm12 = expr.tail[3]
+    rs1 = expr.tail[2]
+    f3 = inst['f3']
+    rd = expr.tail[1]
+    opcode = inst['opcode']
+    return hex(int(imm12 + rs1 + f3 + rd + opcode, 2))
+  
+  def printIsInstructionBIN(self, expr):
     inst = expr.tail[0]
     imm7 = inst['imm7']
     shamt = expr.tail[3]
@@ -364,6 +383,16 @@ class HVisitor(plyplus.STransformer):
     rd = expr.tail[1]
     opcode = inst['opcode']
     return imm7 + shamt + rs1 + f3 + rd + opcode
+  
+  def printIsInstructionHEXA(self, expr):
+    inst = expr.tail[0]
+    imm7 = inst['imm7']
+    shamt = expr.tail[3]
+    rs1 = expr.tail[2]
+    f3 = inst['f3']
+    rd = expr.tail[1]
+    opcode = inst['opcode']
+    return hex(int(imm7 + shamt + rs1 + f3 + rd + opcode, 2))
 
   #Metodo para imprimir el codigo maquina segun cada instruccion
   def inst(self, expr):
@@ -371,15 +400,18 @@ class HVisitor(plyplus.STransformer):
         
     if inst['type'] == 'R':
       print("f7({})-rs2({})-rs1({})-f3({})-rd({})-opcode({})".format(inst['f7'], expr.tail[3], expr.tail[2], inst['f3'], expr.tail[1], inst['opcode']))
-      print(self.printRInstruction(expr))
+      print(self.printRInstructionBIN(expr))
+      print(self.printRInstructionHEXA(expr))
         
     elif inst['type'] == 'I':
       print("imm12({})-rs1({})-f3({})-rd({})-opcode({})".format(expr.tail[3], expr.tail[2], inst['f3'], expr.tail[1], inst['opcode']))
-      print(self.printIInstruction(expr))
+      print(self.printIInstructionBIN(expr))
+      print(self.printIInstructionHEXA(expr))
 
     elif inst['type'] == 'Is':
       print("imm7({})-shamt({})-rs1({})-f3({})-rd({})-opcode({})".format(inst['imm7'], expr.tail[3], expr.tail[2], inst['f3'], expr.tail[1], inst['opcode']))
-      print(self.printIsInstruction(expr))
+      print(self.printIsInstructionBIN(expr))
+      print(self.printIsInstructionHEXA(expr))
           
 
 
