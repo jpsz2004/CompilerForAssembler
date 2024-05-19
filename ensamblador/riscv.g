@@ -1,7 +1,7 @@
 start: program;
 
 program:
-  inst | label | label inst;
+  inst+;
 
 inst: 
     instr  regname ',' regname ',' regname 
@@ -10,14 +10,11 @@ inst:
   | instil regname ',' offset
   | insts regname ',' offset
   | instb regname ',' regname ',' imm12
-  | instj  regname ',' imm12
-  | instij regname ',' imm12
-  | instu regname ',' imm12
-  | instie;
+  | instj  regname ',' imm21
+  | instu regname ',' imm20
+  | instiecall | instiebreak;
 
 offset: imm12 '\(' regname '\)';
-
-instname: instr | insti | instil;
 
 instr: 'add' | 'sub' | 'xor' | 'or' | 'and'
        | 'sll' | 'srl' | 'sra' | 'slt' | 'sltu';
@@ -27,7 +24,7 @@ insti: 'addi' | 'xori' | 'ori' | 'andi'
 
 instis: 'slli' | 'srli' | 'srai';
 
-instil: 'lw' | 'lh' | 'lb';
+instil: 'lw' | 'lh' | 'lb' | 'lbu' | 'lhu' | 'jalr';
 
 insts: 'sb' | 'sh' | 'sw';
 
@@ -35,19 +32,20 @@ instb: 'beq' | 'bne' | 'blt' | 'bge' | 'bltu' | 'bgeu';
 
 instj: 'jal';
 
-instij: 'jalr';
-
 instu: 'lui' | 'auipc';
 
-instie: 'ecall' | 'ebreak';
+instiecall: 'ecall';
+instiebreak: 'ebreak';
 
 imm12 : VAL;
 imm5 : VAL;
+imm21 : VAL;
+imm20: VAL;
 
 VAL: '[0]|(\-|\+)?[1-9][0-9]*';
 
 regname: 
-   'x0'
+   'x0'  | 'zero'
   | 'x1' | 'ra'
   | 'x2' | 'sp' 
   | 'x3' | 'gp' 
@@ -80,8 +78,5 @@ regname:
   | 'x30' | 't5'
   | 'x31' | 't6';
 
-label: LABELNAME ':';
-LABELNAME: 'julian';
-
-COMMENT: ';' '.*?' (%ignore);
+COMMENT: ';' '.*' (%ignore);
 WS: '[ \t\r\n]+' (%ignore);

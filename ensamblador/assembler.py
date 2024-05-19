@@ -1,320 +1,71 @@
 import plyplus 
 import sys
+import json
 
-regNames = {
-  'zero': 0,'x0': 0,
-  'x1': 1, 'ra': 1, 
-  'x2': 2, 'sp': 2,
-  'x3': 3, 'gp': 3,
-  'x4': 4, 'tp': 4,
-  'x5': 5, 't0': 5,
-  'x6': 6, 't1': 6,
-  'x7': 7, 't2': 7,
-  'x8': 8, 's0': 8, 'fp': 8,
-  'x9': 9, 's1': 9,
-  'x10': 10, 'a0': 10,
-  'x11': 11, 'a1': 11,
-  'x12': 12, 'a2': 12,
-  'x13': 13, 'a3': 13,
-  'x14': 14, 'a4': 14,
-  'x15': 15, 'a5': 15,
-  'x16': 16, 'a6': 16,
-  'x17': 17, 'a7': 17,
-  'x18': 18, 's2': 18,
-  'x19': 19, 's3': 19,
-  'x20': 20, 's4': 20,
-  'x21': 21, 's5': 21,
-  'x22': 22, 's6': 22,
-  'x23': 23, 's7': 23,
-  'x24': 24, 's8': 24,
-  'x25': 25, 's9': 25,
-  'x26': 26, 's10': 26,
-  'x27': 27, 's11': 27,
-  'x28': 28, 't3': 28,
-  'x29': 29, 't4': 29,
-  'x30': 30, 't5': 30,
-  'x31': 31, 't6': 31
-}
+#Carga de los archivos JSON con la informacion de los registros y las instrucciones
+with open('registers.json') as f:
+  regNames = json.load(f)
 
-instInfo = {
-  #Instrucciones tipo R
-  'add': {
-    'type': 'R',
-    'opcode': '0110011',
-    'f3': '000',
-    'f7': '0000000'
-  },
-  'sub': {
-    'type': 'R',
-    'opcode': '0110011',
-    'f3': '000',
-    'f7': '0100000'
-  },
-  'and': {
-    'type': 'R',
-    'opcode': '0110011',
-    'f3': '111',
-    'f7': '0000000'
-  },
-  'or': {
-    'type': 'R',
-    'opcode': '0110011',
-    'f3': '110',
-    'f7': '0000000'
-  },
-  'xor': {
-    'type': 'R',
-    'opcode': '0110011',
-    'f3': '100',
-    'f7': '0000000'
-  },
-  'sll': {
-    'type': 'R',
-    'opcode': '0110011',
-    'f3': '001',
-    'f7': '0000000'
-  },
-  'srl': {
-    'type': 'R',
-    'opcode': '0110011',
-    'f3': '101',
-    'f7': '0000000'
-  },
-  'sra': {
-    'type': 'R',
-    'opcode': '0110011',
-    'f3': '101',
-    'f7': '0100000'
-  },
-  'slt': {
-    'type': 'R',
-    'opcode': '0110011',
-    'f3': '010',
-    'f7': '0000000'
-  },
-  'sltu': {
-    'type': 'R',
-    'opcode': '0110011',
-    'f3': '011',
-    'f7': '0000000'
-  },
+with open('instInfo.json') as f:
+  instInfo = json.load(f)
 
-  #Instrucciones tipo I
-  'addi': {
-    'type': 'I',
-    'opcode': '0010011',
-    'f3': '000',
-    'f7': '0000000'
-  },
-  'xori': {
-    'type': 'I',
-    'opcode': '0010011',
-    'f3': '000',
-    'f7': '0000000'
-  },
-  'ori': {
-    'type': 'I',
-    'opcode': '0010011',
-    'f3': '000',
-    'f7': '0000000'
-  },
-  'andi': {
-    'type': 'I',
-    'opcode': '0010011',
-    'f3': '000',
-    'f7': '0000000'
-  },
-  'slli': {
-    'type': 'Is',
-    'opcode': '0010011',
-    'f3': '001',
-    'imm7': '0000000'
-  },
-  'srli': {
-    'type': 'Is',
-    'opcode': '0010011',
-    'f3': '101',
-    'imm7': '0000000'
-  },
-  'srai': {
-    'type': 'Is',
-    'opcode': '0010011',
-    'f3': '101',
-    'imm7': '0100000'
-  },
-  'slti': {
-    'type': 'I',
-    'opcode': '0010011',
-    'f3': '010',
-    'f7': '0000000'
-  },
-  'sltiu': {
-    'type': 'I',
-    'opcode': '0010011',
-    'f3': '011',
-    'f7': '0000000'
-  },
 
-  #Instrucciones tipo I load
-  'lb': {
-    'type': 'Il',
-    'opcode': '0000011',
-    'f3': '000',
-    'f7': '0000000'
-  },
-  'lh': {
-    'type': 'Il',
-    'opcode': '0000011',
-    'f3': '001',
-    'f7': '0000000'
-  },
-  'lw': {
-    'type': 'Il',
-    'opcode': '0000011',
-    'f3': '010',
-    'f7': '0000000'
-  },
-  'lbu': {
-    'type': 'Il',
-    'opcode': '0000011',
-    'f3': '100',
-    'f7': '0000000'
-  },
-  'lhu': {
-    'type': 'Il',
-    'opcode': '0000011',
-    'f3': '101',
-    'f7': '0000000'
-  },
-
-  #Instrucciones tipo S
-  'sb': {
-    'type': 'S',
-    'opcode': '0100011',
-    'f3': '000',
-    'f7': '0000000'
-  },
-  'sh': {
-    'type': 'S',
-    'opcode': '0100011',
-    'f3': '001',
-    'f7': '0000000'
-  },
-  'sw': {
-    'type': 'S',
-    'opcode': '0100011',
-    'f3': '010',
-    'f7': '0000000'
-  },
-
-  #Intrucciones tipo B
-  'beq': {
-    'type': 'B',
-    'opcode': '1100011',
-    'f3': '000',
-    'f7': '0000000'
-  },
-  'bne': {
-    'type': 'B',
-    'opcode': '1100011',
-    'f3': '001',
-    'f7': '0000000'
-  },
-  'blt': {
-    'type': 'B',
-    'opcode': '1100011',
-    'f3': '100',
-    'f7': '0000000'
-  },
-  'bge': {
-    'type': 'B',
-    'opcode': '1100011',
-    'f3': '101',
-    'f7': '0000000'
-  },
-  'bltu': {
-    'type': 'B',
-    'opcode': '1100011',
-    'f3': '110',
-    'f7': '0000000'
-  },
-  'bgeu': {
-    'type': 'B',
-    'opcode': '1100011',
-    'f3': '111',
-    'f7': '0000000'
-  },
-
-  #Instrucciones tipo J
-  'jal': {
-    'type': 'J',
-    'opcode': '1101111',
-    'f3': '000',
-    'f7': '0000000'
-  },
-
-  #Instruccion tipo I jalr
-  'jalr': {
-    'type': 'Ijalr',
-    'opcode': '1100111',
-    'f3': '000',
-    'f7': '0000000'
-  },
-
-  #Instruccion tipo U
-  'lui': {
-    'type': 'U',
-    'opcode': '0110111',
-    'f3': '000',
-    'f7': '0000000'
-  },
-  'auipc': {
-    'type': 'U',
-    'opcode': '0010111',
-    'f3': '000',
-    'f7': '0000000'
-  },
-
-  #Instrucciones tipo I adicionales
-  'ecall': {
-    'type': 'Iecall',
-    'opcode': '1110011',
-    'f3': '000',
-    'f7': '0000000'
-  },
-  'ebreak': {
-    'type': 'Iebreak',
-    'opcode': '1110011',
-    'f3': '000',
-    'f7': '0000000'
-  }
-}
-
+#Clase para reportar errores de inmediatos fuera de rango
 class ImmediateOutOfRangeError(Exception):
-    """Exception raised for immediates that do not fit in 12 bits."""
     pass
 
+#Clase para visitar el arbol de parseo
 class HVisitor(plyplus.STransformer):
     
+  #Metodo para obtener los nombres de los registros y convertir sus valores a binarios
   def regname(self, expr):
     val = expr.tail[0]
     regNum = regNames[val]
     regBin = format(regNum, '05b')
     return regBin
   
+  #Metodo para parsear las instrucciones tipo R
   def instr(self, expr):
     inst =  expr.tail[0]
     return instInfo[inst]
     
-  
+  #Metodo para parsear las instrucciones tipo I
   def insti(self, expr):
     inst =  expr.tail[0]
     return instInfo[inst]
   
+  #Metodo para parsear las instrucciones tipo I de corrimiento
   def instis(self, expr):
     inst =  expr.tail[0]
     return instInfo[inst]
-    
+  
+  #Metodo para parsear las instrucciones tipo I de carga
+  def instil(self, expr):
+    inst =  expr.tail[0]
+    return instInfo[inst]
+  
+  #Metodo para parsear las instrucciones tipo S
+  def insts(self, expr):
+    inst = expr.tail[0]
+    return instInfo[inst]
+  
+  def instj(self, expr):
+    inst = expr.tail[0]
+    return instInfo[inst]
+
+  def instu(self, expr):
+    inst = expr.tail[0]
+    return instInfo[inst]
+  
+  def instiecall(self, expr):
+    inst = expr.tail[0]
+    return instInfo[inst]
+
+  def instiebreak(self, expr):
+    inst = expr.tail[0]
+    return instInfo[inst]
+  
+  #Metodo para convertir los inmediatos de 12 bits a binario con signo
   def imm12(self, expr):
     val = int(expr.tail[0])
     # Verifica que el inmediato quepa en 12 bits con signo
@@ -328,6 +79,7 @@ class HVisitor(plyplus.STransformer):
     imm12Bin = format(val & 0xfff, '012b')  # Asegura que esté en 12 bits
     return imm12Bin
   
+  #Metodo para convertir los inmediatos de 5 bits a binario sin signo
   def imm5(self, expr):
     val = int(expr.tail[0])
     if val < 0 or val > 31:
@@ -336,6 +88,53 @@ class HVisitor(plyplus.STransformer):
     imm5Bin = format(val & 0x1f, '05b')  # Asegura que esté en 5 bits
     return imm5Bin
 
+  #Método para convertir los inmediatos de 21 bits a binario con signo
+  def imm21(self, expr):
+    val = int(expr.tail[0])
+    if val < -1048576 or val > 1048575:
+      raise ImmediateOutOfRangeError(f"Immediate value {val} out of range for 21-bit signed integer")
+    
+    if val < 0:
+      val = (1 << 21) + val
+
+    imm21Bin = format(val & 0x1fffff, '021b')  # Asegura que esté en 21 bits
+    return imm21Bin
+  
+  #Método para convertir los inmediatos de 20 bits a binario sin signo
+  def imm20(self, expr):
+    val = int(expr.tail[0])
+    if val < -524288 or val > 524287:
+      raise ImmediateOutOfRangeError(f"Immediate value {val} out of range for 20-bit signed integer")
+    
+    if val < 0:
+      val = (1 << 20) + val
+    
+    imm20Bin = format(val & 0xfffff, '020b')  # Asegura que esté en 20 bits
+    return imm20Bin
+  
+  #Metodo para dividir el inmediato en 2 partes [4:0] y [11:5]
+  def splitImmediate(self, expr):
+    offset = expr.tail[2]
+    imm = offset.tail[0]
+    imm = imm.zfill(12)
+    lsbImm = imm[-5:]
+    msbImm = imm[:7]
+
+    return lsbImm, msbImm
+  
+  #Metodo para dividir el inmediato de las instrucciones tipo J
+  def immJ(self, expr):
+    imm = expr.tail[2]
+    imm = imm.zfill(21)
+    imm20 = imm[0]
+    imm10to1 = imm[10:20]
+    imm11 = imm[9]
+    imm19to12 = imm[1:9]
+
+    return imm20, imm10to1, imm11, imm19to12
+    
+
+  #Imprime las instrucciones tipo R en binario
   def printRInstructionBIN(self, expr):
     inst = expr.tail[0]
     f7 = inst['f7']
@@ -346,6 +145,7 @@ class HVisitor(plyplus.STransformer):
     opcode = inst['opcode']
     return f7 + rs2 + rs1 + f3 + rd + opcode
   
+  #Imprime las instrucciones tipo R en hexadecimal
   def printRInstructionHEXA(self, expr):
     inst = expr.tail[0]
     f7 = inst['f7']
@@ -356,6 +156,7 @@ class HVisitor(plyplus.STransformer):
     opcode = inst['opcode']
     return hex(int(f7 + rs2 + rs1 + f3 + rd + opcode, 2))
   
+  #Imprime las intrucciones tipo I en binario
   def printIInstructionBIN(self, expr):
     inst = expr.tail[0]
     imm12 = expr.tail[3]
@@ -365,6 +166,7 @@ class HVisitor(plyplus.STransformer):
     opcode = inst['opcode']
     return imm12 + rs1 + f3 + rd + opcode
   
+  #Imprime las instrucciones tipo I en hexadecimal
   def printIInstructionHEXA(self, expr):
     inst = expr.tail[0]
     imm12 = expr.tail[3]
@@ -374,6 +176,7 @@ class HVisitor(plyplus.STransformer):
     opcode = inst['opcode']
     return hex(int(imm12 + rs1 + f3 + rd + opcode, 2))
   
+  #Imprime las intrucciones tipo I de corrimiento en binario
   def printIsInstructionBIN(self, expr):
     inst = expr.tail[0]
     imm7 = inst['imm7']
@@ -384,6 +187,7 @@ class HVisitor(plyplus.STransformer):
     opcode = inst['opcode']
     return imm7 + shamt + rs1 + f3 + rd + opcode
   
+  #Imprime las instrucciones tipo I de corrimiento en hexadecimal
   def printIsInstructionHEXA(self, expr):
     inst = expr.tail[0]
     imm7 = inst['imm7']
@@ -393,6 +197,116 @@ class HVisitor(plyplus.STransformer):
     rd = expr.tail[1]
     opcode = inst['opcode']
     return hex(int(imm7 + shamt + rs1 + f3 + rd + opcode, 2))
+  
+  #Imprime las instrucciones tipo I de carga en binario
+  def printIlInstructionBIN(self, expr):
+    inst = expr.tail[0]
+    offset = expr.tail[2]
+    imm = offset.tail[0]
+    rs1 = offset.tail[1]
+    f3 = inst['f3']
+    rd = expr.tail[1]
+    opcode = inst['opcode']
+    return imm + rs1 + f3 + rd + opcode
+  
+  #Imprime las instrucciones tipo I de carga en hexadecimal
+  def printIlInstructionHEXA(self, expr):
+    inst = expr.tail[0]
+    offset = expr.tail[2]
+    imm = offset.tail[0]
+    rs1 = offset.tail[1]
+    f3 = inst['f3']
+    rd = expr.tail[1]
+    opcode = inst['opcode']
+    return hex(int(imm + rs1 + f3 + rd + opcode, 2))
+
+  #Imprime las instrucciones tipo S en binario
+  def printSInstructionBIN(self, expr):
+    inst = expr.tail[0]
+    rs2 = expr.tail[1]
+    offset = expr.tail[2]
+    imm5, imm7 = self.splitImmediate(expr)
+    rs1 = offset.tail[1]
+    f3 = inst['f3']
+    opcode = inst['opcode']
+
+    return imm7 + rs2 + rs1 + f3 + imm5 + opcode
+
+  #Imprime las instrucciones tipo S en hexadecimal
+  def printSInstructionHEXA(self, expr):
+    inst = expr.tail[0]
+    rs2 = expr.tail[1]
+    offset = expr.tail[2]
+    imm5, imm7 = self.splitImmediate(expr)
+    rs1 = offset.tail[1]
+    f3 = inst['f3']
+    opcode = inst['opcode']
+
+    return hex(int(imm7 + rs2 + rs1 + f3 + imm5 + opcode, 2)) 
+
+  #Imprime las instrucciones tipo J en binario
+  def printJInstructionBIN(self, expr):
+    inst = expr.tail[0]
+    imm20, imm10to1, imm11, imm19to12 = self.immJ(expr)
+    rd = expr.tail[1]
+    opcode = inst['opcode']
+
+    return imm20 + imm10to1 + imm11 + imm19to12 + rd + opcode
+
+  #Imprime las instrucciones tipo J en hexadecimal
+  def printJInstructionHEXA(self, expr):
+    inst = expr.tail[0]
+    imm20, imm10to1, imm11, imm19to12 = self.immJ(expr)
+    rd = expr.tail[1]
+    opcode = inst['opcode']
+
+    return hex(int(imm20 + imm10to1 + imm11 + imm19to12 + rd + opcode, 2))
+
+  #Imprime las instrucciones tipo U en binario
+  def printUInstructionBIN(self, expr):
+    inst = expr.tail[0]
+    imm20 = expr.tail[2]
+    rd = expr.tail[1]
+    opcode = inst['opcode']
+
+    return imm20 + rd + opcode
+  
+  #Imprime las instrucciones tipo U en hexadecimal
+  def printUInstructionHEXA(self, expr):
+    inst = expr.tail[0]
+    imm20 = expr.tail[2]
+    rd = expr.tail[1]
+    opcode = inst['opcode']
+
+    return hex(int(imm20 + rd + opcode, 2))
+  
+  def printIEcallInstructionBIN(self, expr):
+    inst = expr.tail[0]
+    opcode = inst['opcode']
+    opcode = opcode.zfill(32)
+    return opcode
+
+  def printIEcallInstructionHEXA(self, expr):
+    inst = expr.tail[0]
+    opcode = inst['opcode']
+    opcode = opcode.zfill(32)
+    return hex(int(opcode, 2))
+  
+  def printIEbreakInstructionBIN(self, expr):
+    inst = expr.tail[0]
+    opcode = inst['opcode']
+    opcode = opcode.zfill(20)
+    f12 = inst['f12']
+
+    return f12 + opcode
+  
+  def printIEbreakInstructionHEXA(self, expr):
+    inst = expr.tail[0]
+    opcode = inst['opcode']
+    opcode = opcode.zfill(20)
+    f12 = inst['f12']
+
+    return hex(int(f12 + opcode, 2))
 
   #Metodo para imprimir el codigo maquina segun cada instruccion
   def inst(self, expr):
@@ -412,9 +326,40 @@ class HVisitor(plyplus.STransformer):
       print("imm7({})-shamt({})-rs1({})-f3({})-rd({})-opcode({})".format(inst['imm7'], expr.tail[3], expr.tail[2], inst['f3'], expr.tail[1], inst['opcode']))
       print(self.printIsInstructionBIN(expr))
       print(self.printIsInstructionHEXA(expr))
+
+    elif inst['type'] == 'Il':
+      print("imm12({})-rs1({})-f3({})-rd({})-opcode({})".format(expr.tail[2].tail[0], expr.tail[2].tail[1], inst['f3'], expr.tail[1], inst['opcode']))
+      print(self.printIlInstructionBIN(expr))
+      print(self.printIlInstructionHEXA(expr))
+
+    elif inst['type'] == 'S':
+      print("imm7({})-rs2({})-rs1({})-f3({})-imm5({})-opcode({})".format(self.splitImmediate(expr)[1], expr.tail[1], expr.tail[2].tail[1], inst['f3'], self.splitImmediate(expr)[0], inst['opcode']))
+      print(self.printSInstructionBIN(expr))
+      print(self.printSInstructionHEXA(expr))
+    
+    elif inst['type'] == 'J':
+      print("imm21({})-rd({})-opcode({})".format(self.immJ(expr)[0] + self.immJ(expr)[1] + self.immJ(expr)[2] + self.immJ(expr)[3], expr.tail[1], inst['opcode']))
+      print(self.printJInstructionBIN(expr))
+      print(self.printJInstructionHEXA(expr))
+    
+    elif inst['type'] == 'U':
+      print("imm20({})-rd({})-opcode({})".format(expr.tail[2], expr.tail[1], inst['opcode']))
+      print(self.printUInstructionBIN(expr))
+      print(self.printUInstructionHEXA(expr)) 
+
+    elif inst['type'] == 'IEcall':
+      print("opcode({})".format(inst['opcode']))
+      print(self.printIEcallInstructionBIN(expr))
+      print(self.printIEcallInstructionHEXA(expr))
+    
+    elif inst['type'] == 'IEbreak':
+      print("f12({})-opcode({})".format(inst['f12'], inst['opcode']))
+      print(self.printIEbreakInstructionBIN(expr))
+      print(self.printIEbreakInstructionHEXA(expr))
+  
           
 
-
+# LLamada principal a la gramatica y al visitante
 if __name__ == '__main__':
   if len(sys.argv) != 3:
     print("Example call: {} input.asm output.asm".format(sys.argv[0]))
